@@ -1,19 +1,22 @@
 # pytorch-0.4-yolov3
-## This repository is created for implmentation of yolov3 with pytorch 0.4 from marvis yolov2.
+## This repository is created for implmentation of yolov3 with pytorch 0.4 from marvis yolov2. 
+This repository is forked from marvis/pytorch-yolo2, 
+but I couldn't upload or modify directly to marvis source files because many files were changed even filenames.
 
 ### Difference between this repository and marvis original version.
-
-* some programs are re-structured for windows environments. (for example _ _name_ _ (variable in python program) is checked for multiple threads).
-* load and save weights are modified to compatible to yolov2 and yolov3 versions (means that this repository works for yolov2 and yolov3 configuration without source modification.)
-* fully support yolov3 detction and training
+* some programs are re-structured for windows environments. 
+(for example _ _name_ _ (variable in python program) is checked for multiple threads).
+* load and save weights are modified to compatible to yolov2 and yolov3 versions 
+(means that this repository works for yolov2 and yolov3 configuration without source modification.)
+* fully support yolov3 detection and training
    * region_loss.py is renamed to region_layer.py.
    * outputs of region_layer.py and yolo_layer.py are enclosed for dictionary variables.     
 * codes are modified to work on pytorch 0.4 and python3
-* some codes are modified to speed up and easy readings.
+* some codes are modified to speed up and easy readings. (I'm not sure.. T_T)
 
-### Please refer to https://github.com/marvis/pytorch-yolo2 for the detail information.
+#### If you want to know the training and detect procedure, please refer to https://github.com/marvis/pytorch-yolo2 for the detail information.
 
-### Train your own data
+### Train your own data or coco, voc data as follows:
 ```
 python train.py -d cfg/coco.data -c cfg/yolo_v3.cfg -w yolov3.weights
 ```
@@ -56,7 +59,6 @@ dog: 0.999996
 truck: 0.995232  
 bicycle: 0.999973  
 save plot results to predictions.jpg  
-
 
 ### License
 
