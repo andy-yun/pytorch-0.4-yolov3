@@ -72,4 +72,19 @@ save plot results to predictions.jpg
 
 MIT License (see LICENSE file).
 
+### Citation
+
+If you find this code useful for your research, you can cite if you want as follows:
+
+@misc{YunYolov3,
+  author = {Young-Sun Yun},
+  title = {pytorch-0.4-yolov3},
+  publisher = {GitHub},
+  year = {2018},
+  howpublished = {\url{https://github.com/andy-yun/pytorch-0.4-yolov3}}
+  
+### Contact
+
+If there is any question, feel free to contact \url{ysyun.andy@gmail.com}
+
 
