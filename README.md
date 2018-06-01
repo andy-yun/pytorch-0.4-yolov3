@@ -4,7 +4,7 @@
 ### Difference between this repository and marvis original version.
 
 * some programs are re-structured for windows environments. (for example __name__ is always compared for starting).
-* load and save weights are modified to compatible to check major and minor versions (means that this repository works for yolov2 and yolov3 configuration without source modification.)
+* load and save weights are modified to compatible to yolov2 and yolov3 versions (means that this repository works for yolov2 and yolov3 configuration without source modification.)
 * fully support yolov3 detction and training
    * region_loss.py is renamed to region_layer.py.
    * outputs of region_layer.py and yolo_layer.py are enclosed for dictionary variables.     
