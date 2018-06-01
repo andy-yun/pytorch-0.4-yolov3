@@ -14,7 +14,7 @@ but I couldn't upload or modify directly to marvis source files because many fil
 * codes are modified to work on pytorch 0.4 and python3
 * some codes are modified to speed up and easy readings. (I'm not sure.. T_T)
 
-#### If you want to know the training and detect procedure, please refer to https://github.com/marvis/pytorch-yolo2 for the detail information.
+#### If you want to know the training and detect procedures, please refer to https://github.com/marvis/pytorch-yolo2 for the detail information.
 
 ### Train your own data or coco, voc data as follows:
 ```
