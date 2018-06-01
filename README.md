@@ -82,6 +82,7 @@ If you find this code useful for your research, you can cite if you want as foll
   publisher = {GitHub},
   year = {2018},
   howpublished = {\url{https://github.com/andy-yun/pytorch-0.4-yolov3}}
+  }
   
 ### Contact
 
