@@ -1,0 +1,7 @@
+classes = 7
+train  =  data/sketch_train.txt
+valid  = data/sketch_test.txt
+names = data/sketch.names
+backup = backup
+#gpus = 0,1
+gpus = 0
