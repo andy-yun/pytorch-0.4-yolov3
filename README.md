@@ -7,6 +7,10 @@
 
 python train.py -d cfg/coco.data -c cfg/yolo_v3.cfg -w yolo_v3.weights
 
+### detect the dog using pretrained weights
+
+python detect.py cfg/yolo_v3.cfg yolo_v3.weights data/dog.jpg data/coco.names
+
 ### License
 
 MIT License (see LICENSE file).
