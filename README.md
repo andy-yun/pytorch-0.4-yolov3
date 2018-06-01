@@ -20,6 +20,7 @@ python train.py -d cfg/coco.data -c cfg/yolo_v3.cfg -w yolo_v3.weights
 
 ### detect the dog using pretrained weights
 
+#### yolov2 models
 ```
 wget http://pjreddie.com/media/files/yolo.weights
 python detect.py cfg/yolo.cfg yolo.weights data/dog.jpg data/voc.names 
@@ -35,6 +36,7 @@ bicycle: 0.998012
 sheep: 0.990524  
 save plot results to predictions.jpg  
 
+#### yolov3 models
 ```
 wget https://pjreddie.com/media/files/yolov3.weights
 python detect.py cfg/yolo_v3.cfg yolov3.weights data/dog.jpg data/coco.names  
