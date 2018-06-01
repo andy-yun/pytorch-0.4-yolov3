@@ -15,10 +15,12 @@
 
 ### Train your own data
 ```
-python train.py -d cfg/coco.data -c cfg/yolo_v3.cfg -w yolo_v3.weights
+python train.py -d cfg/coco.data -c cfg/yolo_v3.cfg -w yolov3.weights
 ```
+The above command shows the example of training process. I didn't execute the above command.  
+But, I did successully train my own data with the pretrained yolov3.weights. 
 
-### detect the dog using pretrained weights
+### Detect the objects in dog image using pretrained weights
 
 #### yolov2 models
 ```
@@ -42,8 +44,6 @@ wget https://pjreddie.com/media/files/yolov3.weights
 python detect.py cfg/yolo_v3.cfg yolov3.weights data/dog.jpg data/coco.names  
 ```
 
-* detct.py is not changed much.
-
 ![predictions](data/predictions-yolov3.jpg)
 
 Loading weights from yolov3.weights... Done!
@@ -54,7 +54,6 @@ dog: 0.999996
 truck: 0.995232  
 bicycle: 0.999973  
 save plot results to predictions.jpg  
-
 
 
 ### License
