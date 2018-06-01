@@ -3,6 +3,9 @@
 
 ### Please refer to https://github.com/marvis/pytorch-yolo2 for the detail information.
 
+### Train your own data
+
+python train.py -d cfg/coco.data -c cfg/yolo_v3.cfg -w yolo_v3.weights
 
 ### License
 
