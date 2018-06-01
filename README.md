@@ -18,7 +18,11 @@ python train.py -d cfg/coco.data -c cfg/yolo_v3.cfg -w yolo_v3.weights
 
 ### detect the dog using pretrained weights
 
+```
+wget https://pjreddie.com/media/files/yolov3.weights
 python detect.py cfg/yolo_v3.cfg yolo_v3.weights data/dog.jpg data/coco.names  
+```
+
 * detct.py is not changed much.
 
 ![predictions](data/predictions.jpg)
