@@ -20,10 +20,18 @@ but I couldn't upload or modify directly to marvis source files because many fil
 ```
 python train.py -d cfg/coco.data -c cfg/yolo_v3.cfg -w yolov3.weights
 ```
-The above command shows the example of training process. I didn't execute the above command.  
-But, I did successully train my own data with the pretrained yolov3.weights. 
 
-You __should__ notice that the anchor information is different when it used in yolov2 or yolov3 model.
+* The above command shows the example of training process. I didn't execute the above command. But, I did successully train my own data with the pretrained yolov3.weights. 
+
+* You __should__ notice that the anchor information is different when it used in yolov2 or yolov3 model.
+
+* If you want to use the pretrained weight as the initial weights, add -r options in the training command
+
+```
+python train.py -d cfg/my.data -c cfg/my.cfg -w yolov3.weights -r
+```
+
+* maximum epochs option, which is automatically calculated, somestimes is too small, then you can set the max_epochs in your configuration.
 
 ### Detect the objects in dog image using pretrained weights
 
