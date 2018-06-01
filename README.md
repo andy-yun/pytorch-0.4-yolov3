@@ -1,6 +1,14 @@
 # pytorch0.4-yolov3
 ## This repository is created for implmentation of yolov3 with pytorch 0.4 from marvis yolov2.
 
+### Difference between this repository and marvis original version.
+* fully support yolov3 detction and training
+   * region_loss.py is renamed to region_layer.py.
+   * outputs of region_layer.py and yolo_layer.py are enclosed for dictionary variables.
+   
+* codes are modified to work on pytorch 0.4 and python3
+* some codes are modified to speed up and easy readings.
+
 ### Please refer to https://github.com/marvis/pytorch-yolo2 for the detail information.
 
 ### Train your own data
