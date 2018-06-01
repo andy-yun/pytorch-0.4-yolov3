@@ -1,6 +1,6 @@
 # pytorch-0.4-yolov3
 ## This repository is created for implmentation of yolov3 with pytorch 0.4 from marvis yolov2. 
-This repository is forked from @github/marvis/pytorch-yolo2, 
+This repository is forked from great work pytorch-yolo2 of @github/marvis, 
 but I couldn't upload or modify directly to marvis source files because many files were changed even filenames.
 
 ### Difference between this repository and marvis original version.
