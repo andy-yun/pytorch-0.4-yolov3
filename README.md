@@ -3,7 +3,7 @@
 
 ### Difference between this repository and marvis original version.
 
-* some programs are re-structured for windows environments. (for example __name__ is always compared for starting).
+* some programs are re-structured for windows environments. (for example _ _name_ _ (variable in python program) is checked for multiple threads).
 * load and save weights are modified to compatible to yolov2 and yolov3 versions (means that this repository works for yolov2 and yolov3 configuration without source modification.)
 * fully support yolov3 detction and training
    * region_loss.py is renamed to region_layer.py.
@@ -19,6 +19,8 @@ python train.py -d cfg/coco.data -c cfg/yolo_v3.cfg -w yolov3.weights
 ```
 The above command shows the example of training process. I didn't execute the above command.  
 But, I did successully train my own data with the pretrained yolov3.weights. 
+
+You __should__ notice that the anchor information is different when it used in yolov2 or yolov3 model.
 
 ### Detect the objects in dog image using pretrained weights
 
