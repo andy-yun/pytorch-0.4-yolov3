@@ -2,6 +2,7 @@
 ## This repository is created for implmentation of yolov3 with pytorch 0.4 from marvis yolov2.
 
 ### Difference between this repository and marvis original version.
+```
 * some programs are re-structured for windows environments. (for example __name__ is always compared for starting).
 * load and save weights are modified to compatible to check major and minor versions (means that this repository works for yolov2 and yolov3 configuration without source modification.)
 * fully support yolov3 detction and training
@@ -10,11 +11,14 @@
    
 * codes are modified to work on pytorch 0.4 and python3
 * some codes are modified to speed up and easy readings.
+```
 
 ### Please refer to https://github.com/marvis/pytorch-yolo2 for the detail information.
 
 ### Train your own data
+```
 python train.py -d cfg/coco.data -c cfg/yolo_v3.cfg -w yolo_v3.weights
+```
 
 ### detect the dog using pretrained weights
 
