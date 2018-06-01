@@ -23,7 +23,7 @@ python train.py -d cfg/coco.data -c cfg/yolo_v3.cfg -w yolo_v3.weights
 #### yolov2 models
 ```
 wget http://pjreddie.com/media/files/yolo.weights
-python detect.py cfg/yolo.cfg yolo.weights data/dog.jpg data/voc.names 
+python detect.py cfg/yolo.cfg yolo.weights data/dog.jpg data/coco.names 
 ```
 
 ![predictions](data/predictions-yolov2.jpg)
@@ -31,9 +31,9 @@ python detect.py cfg/yolo.cfg yolo.weights data/dog.jpg data/voc.names
 Loading weights from yolo.weights... Done!  
 data\dog.jpg: Predicted in 0.832918 seconds.  
 3 box(es) is(are) found  
-cat: 0.934710  
+truck: 0.934710  
 bicycle: 0.998012  
-sheep: 0.990524  
+dog: 0.990524  
 save plot results to predictions.jpg  
 
 #### yolov3 models
