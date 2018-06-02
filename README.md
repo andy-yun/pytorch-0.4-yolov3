@@ -10,7 +10,7 @@ but I couldn't upload or modify directly to marvis source files because many fil
 (means that this repository works for yolov2 and yolov3 configuration without source modification.)
 * fully support yolov3 detection and training
    * region_loss.py is renamed to region_layer.py.
-   * outputs of region_layer.py and yolo_layer.py are enclosed for dictionary variables.     
+   * outputs of region_layer.py and yolo_layer.py are enclosed to dictionary variables.     
 * codes are modified to work on pytorch 0.4 and python3
 * some codes are modified to speed up and easy readings. (I'm not sure.. T_T)
 
