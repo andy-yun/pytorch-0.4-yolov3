@@ -25,7 +25,7 @@ python train.py -d cfg/coco.data -c cfg/yolo_v3.cfg -w yolov3.weights
 
 * You __should__ notice that the anchor information is different when it used in yolov2 or yolov3 model.
 
-* If you want to use the pretrained weight as the initial weights, add -r options in the training command
+* If you want to use the pretrained weight as the initial weights, add -r option in the training command
 
 ```
 python train.py -d cfg/my.data -c cfg/my.cfg -w yolov3.weights -r
