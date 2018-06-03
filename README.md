@@ -13,6 +13,7 @@ but I couldn't upload or modify directly to marvis source files because many fil
    * outputs of region_layer.py and yolo_layer.py are enclosed to dictionary variables.     
 * codes are modified to work on pytorch 0.4 and python3
 * some codes are modified to speed up and easy readings. (I'm not sure.. T_T)
+* in training mode, check nan value and use gradient clipping.
 
 #### If you want to know the training and detect procedures, please refer to https://github.com/marvis/pytorch-yolo2 for the detail information.
 
@@ -20,6 +21,8 @@ but I couldn't upload or modify directly to marvis source files because many fil
 ```
 python train.py -d cfg/coco.data -c cfg/yolo_v3.cfg -w yolov3.weights
 ```
+
+* new weights are saved in backup directory along to epoch numbers (last 5 weights are saved, you control the number of backups in train.py)
 
 * The above command shows the example of training process. I didn't execute the above command. But, I did successully train my own data with the pretrained yolov3.weights. 
 
