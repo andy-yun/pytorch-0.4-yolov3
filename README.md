@@ -36,14 +36,14 @@ python train.py -d cfg/my.data -c cfg/my.cfg -w yolov3.weights -r
 
 * maximum epochs option, which is automatically calculated, somestimes is too small, then you can set the max_epochs in your configuration.
 
-#### Recorded yolov2 and yolov training for my own data
+#### Recorded yolov2 and yolov3 training for my own data
 * yolov2 training recorded :   
 [![yolov2 training](https://img.youtube.com/vi/jhoaVeqtOQw/0.jpg)](https://www.youtube.com/watch?v=jhoaVeqtOQw)  
 
 * yolov3 training recorded :  
 [![yolov3 training](https://img.youtube.com/vi/zazKAm9FClc/0.jpg)](https://www.youtube.com/watch?v=zazKAm9FClc)  
 
-* In above recorded video, if you use the pretrained weights as base, about less than 10 or 20 epochs, you can see the large number of proposals. However, when training is in progress, nPP decreases to zero and increases with model updates.
+* In above recorded videos, if you use the pretrained weights as base, about less than 10 or 20 epochs, you can see the large number of proposals. However, when training is in progress, nPP decreases to zero and increases with model updates.
 
 * The converges of yolov2 and yolov3 are different because yolov2 updates all boxes below 12800 exposures.
 
