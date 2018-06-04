@@ -37,6 +37,8 @@ python train.py -d cfg/my.data -c cfg/my.cfg -w yolov3.weights -r
 * maximum epochs option, which is automatically calculated, somestimes is too small, then you can set the max_epochs in your configuration.
 
 #### Recorded yolov2 and yolov3 training for my own data
+* When you clicked the images, videos will played on yoube.com
+
 * yolov2 training recorded :   
 [![yolov2 training](https://img.youtube.com/vi/jhoaVeqtOQw/0.jpg)](https://www.youtube.com/watch?v=jhoaVeqtOQw)  
 
