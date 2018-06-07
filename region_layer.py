@@ -165,7 +165,7 @@ class RegionLayer(nn.Module):
         loss_coord = self.coord_scale * nn.MSELoss(size_average=False)(coord*coord_mask, tcoord*coord_mask)/2
         # sqrt(object_scale)/2 is almost equal to 1.
         loss_conf = nn.MSELoss(size_average=False)(conf*conf_mask, tconf*conf_mask)/2 
-        loss_cls = self.class_scale * nn.CrossEntropyLoss(size_average=False)(cls, tcls)
+        loss_cls = self.class_scale * nn.CrossEntropyLoss(size_average=False)(cls, tcls) if cls.size(0) > 0 else 0
         loss = loss_coord + loss_conf + loss_cls
         t4 = time.time()
         if False:

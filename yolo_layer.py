@@ -160,7 +160,7 @@ class YoloLayer(nn.Module):
         t3 = time.time()
         loss_coord = nn.MSELoss(size_average=False)(coord*coord_mask, tcoord*coord_mask)/2
         loss_conf = nn.MSELoss(size_average=False)(conf*conf_mask, tconf*conf_mask)
-        loss_cls = nn.CrossEntropyLoss(size_average=False)(cls, tcls)
+        loss_cls = nn.CrossEntropyLoss(size_average=False)(cls, tcls) if cls.size(0) > 0 else 0
         loss = loss_coord + loss_conf + loss_cls
 
         t4 = time.time()
