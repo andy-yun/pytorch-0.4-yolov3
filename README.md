@@ -84,6 +84,34 @@ truck: 0.995232
 bicycle: 0.999973  
 save plot results to predictions.jpg  
 
+### validation and get evaluation results
+
+[![validation](https://img.youtube.com/vi/MMssElpERgU/0.jpg)](https://www.youtube.com/watch?v=MMssElpERgU)  
+
+Heres are results:  
+```
+AP for button = 0.9593
+AP for checkbutton = 0.9202
+AP for edittext = 0.8424
+AP for imageview = 0.8356
+AP for radiobutton = 0.8827
+AP for spinner = 0.9539
+AP for textview = 0.7971
+Mean AP = 0.8845
+~~~~~~~~~~~~~
+   Results:
+-------------
+button          0.959
+checkbutton     0.920
+edittext        0.842
+imageview       0.836
+radiobutton     0.883
+spinner         0.954
+textview        0.797
+=============
+ Average        0.884
+~~~~~~~~~~~~~
+```
 ### License
 
 MIT License (see LICENSE file).
