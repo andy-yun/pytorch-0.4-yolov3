@@ -86,6 +86,9 @@ save plot results to predictions.jpg
 
 ### validation and get evaluation results
 
+##### valid.py data/yourown.data cfg/yourown.cfg yourown_weights
+##### scripts/sketch_eval.py prefix test_files class_names
+
 [![validation](https://img.youtube.com/vi/MMssElpERgU/0.jpg)](https://www.youtube.com/watch?v=MMssElpERgU)  
 
 Heres are results:  
