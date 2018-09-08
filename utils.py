@@ -108,7 +108,13 @@ def get_all_boxes(output, conf_thresh, num_classes, only_objectness=1, validatio
     tot = output[0]['x'].data.size(0)
     all_boxes = [[] for i in range(tot)]
     for i in range(len(output)):
-        pred, anchors, num_anchors = output[i]['x'].data, output[i]['a'], output[i]['n'].item()
+        pred = output[i]['x'].data
+
+        # find number of workers (.s.t, number of GPUS) 
+        nw = output[i]['n'].data.size(0)
+        anchors = output[i]['a'].chunk(nw)[0]
+        num_anchors = output[i]['n'].data[0].item()
+
         b = get_region_boxes(pred, conf_thresh, num_classes, anchors, num_anchors, \
                 only_objectness=only_objectness, validation=validation, use_cuda=use_cuda)
         for t in range(tot):

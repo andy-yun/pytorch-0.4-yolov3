@@ -229,7 +229,7 @@ def train(epoch):
         # org_loss.reverse()
         sum(org_loss).backward()
 
-        nn.utils.clip_grad_norm_(model.parameters(), 1000)
+        nn.utils.clip_grad_norm_(model.parameters(), 10000)
         #for p in model.parameters():
         #    p.data.add_(-lr, p.grad.data)
 
@@ -305,7 +305,7 @@ def test(epoch):
             output = model(data)
             all_boxes = get_all_boxes(output, conf_thresh, num_classes, use_cuda=use_cuda)
 
-            for k in range(data.size(0)):
+            for k in range(len(all_boxes)):
                 boxes = all_boxes[k]
                 boxes = np.array(nms(boxes, nms_thresh))
                 truths = target[k].view(-1, 5)
