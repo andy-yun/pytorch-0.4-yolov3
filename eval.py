@@ -95,7 +95,7 @@ def test():
         output = model(data)
         all_boxes = get_all_boxes(output, conf_thresh, num_classes)
 
-        for k in range(data.size(0)):
+        for k in range(len(all_boxes)):
             boxes = all_boxes[k]
             boxes = np.array(nms(boxes, nms_thresh))
             truths = target[k].view(-1, 5)

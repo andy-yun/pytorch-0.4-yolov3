@@ -2,9 +2,11 @@
 # encoding: utf-8
 import random
 import os
-from PIL import Image
+from PIL import Image, ImageFile
 import numpy as np
 
+# to avoid image file truncation error
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 def scale_image_channel(im, c, v):
     cs = list(im.split())
