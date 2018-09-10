@@ -427,3 +427,8 @@ def get_image_size(fname):
 
 def logging(message):
     print('%s %s' % (time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()), message))
+
+def savelog(message):
+    logging(message)
+    with open('savelog.txt', 'a') as f:
+        print('%s %s' % (time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()), message), file=f)

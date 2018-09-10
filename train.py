@@ -24,7 +24,8 @@ device = None
 use_cuda      = None
 eps           = 1e-5
 keep_backup   = 5
-save_interval = 10  # epoches
+save_interval = 5  # epoches
+test_interval = 10  # epoches
 dot_interval  = 70  # batches
 
 # Test parameters
@@ -32,6 +33,9 @@ evaluate = False
 conf_thresh   = 0.25
 nms_thresh    = 0.4
 iou_thresh    = 0.5
+
+# no test evalulation
+no_eval = False
 
 # Training settings
 def load_testlist(testlist):
@@ -52,6 +56,7 @@ def main():
     datacfg    = FLAGS.data
     cfgfile    = FLAGS.config
     weightfile = FLAGS.weights
+    no_eval    = FLAGS.no_eval
 
     data_options  = read_data_cfg(datacfg)
     net_options   = parse_cfg(cfgfile)[0]
@@ -134,15 +139,19 @@ def main():
         try:
             print("Training for ({:d},{:d})".format(init_epoch, max_epochs))
             fscore = 0
-            if init_epoch > save_interval:
-                mfscore = test(init_epoch-1)
+            if not no_eval and init_epoch > test_interval:
+                print('>> initial evaluating ...')
+                mfscore = test(init_epoch)
+                print('>> done evaluation.')
             else:
                 mfscore = 0.5
-            for epoch in range(init_epoch, max_epochs):
+            for epoch in range(init_epoch+1, max_epochs):
                 nsamples = train(epoch)
-                if epoch > save_interval:
+                if not no_eval and epoch > test_interval and (epoch%test_interval) == 0:
+                    print('>> intermittent evaluating ...')
                     fscore = test(epoch)
-                if (epoch+1) % save_interval == 0:
+                    print('>> done evaluation.')
+                if epoch % save_interval == 0:
                     savemodel(epoch, nsamples)
                 if FLAGS.localmax and fscore > mfscore:
                     mfscore = fscore
@@ -195,7 +204,7 @@ def train(epoch):
 
     processed_batches = cur_model.seen//batch_size
     lr = adjust_learning_rate(optimizer, processed_batches)
-    logging('epoch %d, processed %d samples, lr %e' % (epoch, epoch * len(train_loader.dataset), lr))
+    logging('[%03d] processed %d samples, lr %e' % (epoch, epoch * len(train_loader.dataset), lr))
     model.train()
     t1 = time.time()
     avg_time = torch.zeros(9)
@@ -273,13 +282,13 @@ def savemodel(epoch, nsamples, curmax=False):
     if curmax:
         logging('save local maximum weights to %s/localmax.weights' % (backupdir))
     else:
-        logging('save weights to %s/%06d.weights' % (backupdir, epoch+1))
-    cur_model.seen = (epoch + 1) * nsamples
+        logging('save weights to %s/%06d.weights' % (backupdir, epoch))
+    cur_model.seen = epoch * nsamples
     if curmax: 
         cur_model.save_weights('%s/localmax.weights' % (backupdir))
     else:
-        cur_model.save_weights('%s/%06d.weights' % (backupdir, epoch+1))
-        old_wgts = '%s/%06d.weights' % (backupdir, epoch+1-keep_backup*save_interval)
+        cur_model.save_weights('%s/%06d.weights' % (backupdir, epoch))
+        old_wgts = '%s/%06d.weights' % (backupdir, epoch-keep_backup*save_interval)
         try: #  it avoids the unnecessary call to os.path.exists()
             os.remove(old_wgts)
         except OSError:
@@ -312,7 +321,6 @@ def test(epoch):
                 num_gts = truths_length(truths)
                 total = total + num_gts
                 num_pred = len(boxes)
-        
                 if num_pred == 0:
                     continue
 
@@ -329,7 +337,7 @@ def test(epoch):
     precision = 1.0*correct/(proposals+eps)
     recall = 1.0*correct/(total+eps)
     fscore = 2.0*precision*recall/(precision+recall+eps)
-    logging("correct: %d, precision: %f, recall: %f, fscore: %f" % (correct, precision, recall, fscore))
+    savelog("[%03d] correct: %d, precision: %f, recall: %f, fscore: %f" % (epoch, correct, precision, recall, fscore))
     return fscore
 
 if __name__ == '__main__':
@@ -340,6 +348,8 @@ if __name__ == '__main__':
         type=str, default='cfg/sketch.cfg', help='network configuration file')
     parser.add_argument('--weights', '-w',
         type=str, default='weights/yolov3.weights', help='initial weights file')
+    parser.add_argument('--noeval', '-n', dest='no_eval', action='store_true',
+        help='prohibit test evalulation')
     parser.add_argument('--reset', '-r',
         action="store_true", default=False, help='initialize the epoch and model seen value')
     parser.add_argument('--localmax', '-l',
