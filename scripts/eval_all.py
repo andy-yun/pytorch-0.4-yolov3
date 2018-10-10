@@ -5,7 +5,8 @@ import sys
 from torch.autograd import Variable
 sys.path.append('.')
 from darknet import Darknet
-from utils import do_detect, plot_boxes, load_class_names, image2torch, get_region_boxes, nms
+from utils import get_all_boxes, do_detect, plot_boxes, load_class_names, image2torch, get_region_boxes, nms
+import numpy as np
 
 conf_thresh = 0.005
 #conf_thresh = 0.5
@@ -44,14 +45,10 @@ def get_det_image_name(imagefile):
     return imgname
 
 def get_det_result_name(imagefile):
-    file, ext = os.path.splitext(imagefile)
-    extname = file + ".det"
-    return extname
+    return imagefile.replace('images', 'results').replace('JPEGImages', 'results').replace('.jpg', '.det').replace('.png','.det')
 
 def get_image_xml_name(imagefile):
-    file, ext = os.path.splitext(imagefile)
-    xmlname = file + ".xml"
-    return xmlname
+    return imagefile.replace('images', 'Annotations').replace('JPEGImages', 'Annotations').replace('.jpg', '.xml').replace('.png','.xml')
 
 def eval_list(cfgfile, namefile, weightfile, testfile):
     m = Darknet(cfgfile)
@@ -83,16 +80,18 @@ def eval_list(cfgfile, namefile, weightfile, testfile):
         else:
             m.eval()
             sized = image2torch(sized).cuda();
-            output = m(Variable(sized, volatile=True)).data
-            boxes = get_region_boxes(output, conf_thresh, m.num_classes, m.anchors, m.num_anchors, 0, 1)[0]
-            boxes = nms(boxes, nms_thresh)
+            #output = m(Variable(sized, volatile=True)).data
+            output = m(sized)
+            #boxes = get_region_boxes(output, conf_thresh, m.num_classes, m.anchors, m.num_anchors, 0, 1)[0]
+            boxes = get_all_boxes(output, conf_thresh, m.num_classes)[0]
+            boxes = np.array(nms(boxes, nms_thresh))
 
-        if True:
+        if False:
             savename = get_det_image_name(imgfile)
             print('img: save to %s' % savename)
             plot_boxes(img, boxes, savename, class_names)
 
-        if True:
+        if False:
             savename = get_det_result_name(imgfile)
             print('det: save to %s' % savename)
             save_boxes(imgfile, img, boxes, savename)
