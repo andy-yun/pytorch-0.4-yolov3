@@ -2,7 +2,8 @@ import torch
 from darknet import Darknet
 import dataset
 from torchvision import datasets, transforms
-from utils import get_all_boxes, bbox_iou, nms, get_image_size, read_data_cfg, load_class_names
+from utils import get_all_boxes, bbox_iou, nms, read_data_cfg, load_class_names
+from image import correct_yolo_boxes
 import os
 
 def valid(datacfg, cfgfile, weightfile, outfile):
@@ -45,17 +46,23 @@ def valid(datacfg, cfgfile, weightfile, outfile):
     
     conf_thresh = 0.005
     nms_thresh = 0.45
-    for _, (data, target) in enumerate(valid_loader):
+    if m.net_name() == 'region': # region_layer
+        shape=(0,0)
+    else:
+        shape=(m.width, m.height)
+    for _, (data, target, org_w, org_h) in enumerate(valid_loader):
         data = data.cuda()
         output = m(data)
-        batch_boxes = get_all_boxes(output, conf_thresh, m.num_classes, only_objectness=0, validation=True)
+        batch_boxes = get_all_boxes(output, shape, conf_thresh, m.num_classes, only_objectness=0, validation=True)
         
-        for i in range(data.size(0)):
-            lineId = lineId + 1
+        for i in range(len(batch_boxes)):
+            lineId += 1
             fileId = os.path.basename(valid_files[lineId]).split('.')[0]
-            width, height = get_image_size(valid_files[lineId])
+            #width, height = get_image_size(valid_files[lineId])
+            width, height = float(org_w[i]), float(org_h[i])
             print(valid_files[lineId])
             boxes = batch_boxes[i]
+            correct_yolo_boxes(boxes, width, height, m.width, m.height)
             boxes = nms(boxes, nms_thresh)
             for box in boxes:
                 x1 = (box[0] - box[2]/2.0) * width

@@ -12,6 +12,7 @@ from utils import get_all_boxes, multi_bbox_ious, nms, read_data_cfg, logging
 from cfg import parse_cfg
 from darknet import Darknet
 import argparse
+from image import correct_yolo_boxes
 
 # etc parameters
 use_cuda      = True
@@ -90,19 +91,23 @@ def test():
     correct     = 0.0
     device = torch.device("cuda" if use_cuda else "cpu")
 
-    for _, (data, target) in enumerate(test_loader):
+    if model.net_name() == 'region': # region_layer
+        shape=(0,0)
+    else:
+        shape=(model.width, model.height)
+    for data, target, org_w, org_h in test_loader:
         data = data.to(device)
         output = model(data)
-        all_boxes = get_all_boxes(output, conf_thresh, num_classes)
+        all_boxes = get_all_boxes(output, shape, conf_thresh, num_classes, use_cuda=use_cuda)
 
         for k in range(len(all_boxes)):
             boxes = all_boxes[k]
+            correct_yolo_boxes(boxes, org_w[k], org_h[k], model.width, model.height)
             boxes = np.array(nms(boxes, nms_thresh))
             truths = target[k].view(-1, 5)
             num_gts = truths_length(truths)
             total = total + num_gts
             num_pred = len(boxes)
-     
             if num_pred == 0:
                 continue
 
@@ -119,7 +124,7 @@ def test():
     precision = 1.0*correct/(proposals+eps)
     recall = 1.0*correct/(total+eps)
     fscore = 2.0*precision*recall/(precision+recall+eps)
-    logging("precision: %f, recall: %f, fscore: %f" % (precision, recall, fscore))
+    logging("correct: %d, precision: %f, recall: %f, fscore: %f" % (correct, precision, recall, fscore))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

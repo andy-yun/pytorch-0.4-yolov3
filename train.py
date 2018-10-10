@@ -10,6 +10,7 @@ import gc
 
 import dataset
 from utils import *
+from image import correct_yolo_boxes
 from cfg import parse_cfg
 from darknet import Darknet
 import argparse
@@ -36,6 +37,7 @@ iou_thresh    = 0.5
 
 # no test evalulation
 no_eval = False
+init_eval = False
 
 # Training settings
 def load_testlist(testlist):
@@ -57,6 +59,7 @@ def main():
     cfgfile    = FLAGS.config
     weightfile = FLAGS.weights
     no_eval    = FLAGS.no_eval
+    init_eval  = FLAGS.init_eval
 
     data_options  = read_data_cfg(datacfg)
     net_options   = parse_cfg(cfgfile)[0]
@@ -97,7 +100,9 @@ def main():
 
     global model
     model = Darknet(cfgfile, use_cuda=use_cuda)
-    model.load_weights(weightfile)
+    if weightfile is not None:
+        model.load_weights(weightfile)
+
     #model.print_network()
 
     nsamples = file_lines(trainlist)
@@ -137,22 +142,22 @@ def main():
         test(0)
     else:
         try:
-            print("Training for ({:d},{:d})".format(init_epoch, max_epochs))
+            print("Training for ({:d},{:d})".format(init_epoch+1, max_epochs))
             fscore = 0
-            if not no_eval and init_epoch > test_interval:
+            if init_eval and not no_eval and init_epoch > test_interval:
                 print('>> initial evaluating ...')
                 mfscore = test(init_epoch)
                 print('>> done evaluation.')
             else:
                 mfscore = 0.5
-            for epoch in range(init_epoch+1, max_epochs):
+            for epoch in range(init_epoch+1, max_epochs+1):
                 nsamples = train(epoch)
-                if not no_eval and epoch > test_interval and (epoch%test_interval) == 0:
+                if epoch % save_interval == 0:
+                    savemodel(epoch, nsamples)
+                if not no_eval and epoch >= test_interval and (epoch%test_interval) == 0:
                     print('>> intermittent evaluating ...')
                     fscore = test(epoch)
                     print('>> done evaluation.')
-                if epoch % save_interval == 0:
-                    savemodel(epoch, nsamples)
                 if FLAGS.localmax and fscore > mfscore:
                     mfscore = fscore
                     savemodel(epoch, nsamples, True)
@@ -196,7 +201,7 @@ def train(epoch):
                         transform=transforms.Compose([
                             transforms.ToTensor(),
                         ]), 
-                        train=True, 
+                        train=True,
                         seen=cur_model.seen,
                         batch_size=batch_size,
                         num_workers=num_workers),
@@ -274,7 +279,7 @@ def train(epoch):
     print('')
     t1 = time.time()
     nsamples = len(train_loader.dataset)
-    logging('training with %f samples/s' % (nsamples/(t1-t0)))
+    logging('[%03d] training with %f samples/s' % (epoch, nsamples/(t1-t0)))
     return nsamples
     
 def savemodel(epoch, nsamples, curmax=False):
@@ -308,15 +313,21 @@ def test(epoch):
     proposals   = 0.0
     correct     = 0.0
 
+    if cur_model.net_name() == 'region': # region_layer
+        shape=(0,0)
+    else:
+        shape=(cur_model.width, cur_model.height)
     with torch.no_grad():
-        for data, target in test_loader:
+        for data, target, org_w, org_h in test_loader:
             data = data.to(device)
             output = model(data)
-            all_boxes = get_all_boxes(output, conf_thresh, num_classes, use_cuda=use_cuda)
+            all_boxes = get_all_boxes(output, shape, conf_thresh, num_classes, use_cuda=use_cuda)
 
             for k in range(len(all_boxes)):
                 boxes = all_boxes[k]
+                correct_yolo_boxes(boxes, org_w[k], org_h[k], cur_model.width, cur_model.height)
                 boxes = np.array(nms(boxes, nms_thresh))
+
                 truths = target[k].view(-1, 5)
                 num_gts = truths_length(truths)
                 total = total + num_gts
@@ -347,7 +358,9 @@ if __name__ == '__main__':
     parser.add_argument('--config', '-c',
         type=str, default='cfg/sketch.cfg', help='network configuration file')
     parser.add_argument('--weights', '-w',
-        type=str, default='weights/yolov3.weights', help='initial weights file')
+        type=str, help='initial weights file')
+    parser.add_argument('--initeval', '-i', dest='init_eval', action='store_true',
+        help='performs inital evalulation')
     parser.add_argument('--noeval', '-n', dest='no_eval', action='store_true',
         help='prohibit test evalulation')
     parser.add_argument('--reset', '-r',

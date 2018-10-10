@@ -3,13 +3,14 @@ import time
 from PIL import Image, ImageDraw
 #from models.tiny_yolo import TinyYoloNet
 from utils import *
+from image import letterbox_image, correct_yolo_boxes
 from darknet import Darknet
 
 namesfile=None
 def detect(cfgfile, weightfile, imgfile):
     m = Darknet(cfgfile)
 
-    #m.print_network()
+    m.print_network()
     m.load_weights(weightfile)
     print('Loading weights from %s... Done!' % (weightfile))
 
@@ -20,18 +21,18 @@ def detect(cfgfile, weightfile, imgfile):
     # else:
     #     namesfile = 'data/names'
     
-    use_cuda = True
+    use_cuda = torch.cuda.is_available()
     if use_cuda:
         m.cuda()
 
     img = Image.open(imgfile).convert('RGB')
-    sized = img.resize((m.width, m.height))
-    
-    #for i in range(2):
+    sized = letterbox_image(img, m.width, m.height)
+
     start = time.time()
     boxes = do_detect(m, sized, 0.5, 0.4, use_cuda)
+    correct_yolo_boxes(boxes, img.width, img.height, m.width, m.height)
+
     finish = time.time()
-        #if i == 1:
     print('%s: Predicted in %f seconds.' % (imgfile, (finish-start)))
 
     class_names = load_class_names(namesfile)

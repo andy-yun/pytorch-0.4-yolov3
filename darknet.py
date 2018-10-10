@@ -77,6 +77,14 @@ class EmptyModule(nn.Module):
 # support route shortcut and reorg
 
 class Darknet(nn.Module):
+    def net_name(self):
+        names_list = ('region', 'yolo')
+        name = names_list[0]
+        for m in self.models:
+            if isinstance(m, YoloLayer):
+                name = names_list[1]
+        return name
+
     def getLossLayers(self):
         loss_layers = []
         for m in self.models:
@@ -107,7 +115,7 @@ class Darknet(nn.Module):
 
     def forward(self, x):
         ind = -2
-        self.loss_layers = None
+        #self.loss_layers = None
         outputs = dict()
         out_boxes = dict()
         outno = 0
@@ -385,6 +393,10 @@ class Darknet(nn.Module):
     def save_weights(self, outfile, cutoff=0):
         if cutoff <= 0:
             cutoff = len(self.blocks)-1
+
+        dirname = os.path.dirname(outfile)
+        if not os.path.exists(dirname):
+            os.makedirs(dirname)
 
         fp = open(outfile, 'wb')
         self.header[3] = self.seen

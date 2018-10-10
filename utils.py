@@ -102,7 +102,7 @@ def convert2cpu(gpu_matrix):
 def convert2cpu_long(gpu_matrix):
     return torch.LongTensor(gpu_matrix.size()).copy_(gpu_matrix)
 
-def get_all_boxes(output, conf_thresh, num_classes, only_objectness=1, validation=False, use_cuda=True):
+def get_all_boxes(output, netshape, conf_thresh, num_classes, only_objectness=1, validation=False, use_cuda=True):
     # total number of inputs (batch size)
     # first element (x) for first tuple (x, anchor_mask, num_anchor)
     tot = output[0]['x'].data.size(0)
@@ -115,13 +115,13 @@ def get_all_boxes(output, conf_thresh, num_classes, only_objectness=1, validatio
         anchors = output[i]['a'].chunk(nw)[0]
         num_anchors = output[i]['n'].data[0].item()
 
-        b = get_region_boxes(pred, conf_thresh, num_classes, anchors, num_anchors, \
+        b = get_region_boxes(pred, netshape, conf_thresh, num_classes, anchors, num_anchors, \
                 only_objectness=only_objectness, validation=validation, use_cuda=use_cuda)
         for t in range(tot):
             all_boxes[t] += b[t]
     return all_boxes
 
-def get_region_boxes(output, conf_thresh, num_classes, anchors, num_anchors, only_objectness=1, validation=False, use_cuda=True):
+def get_region_boxes(output, netshape, conf_thresh, num_classes, anchors, num_anchors, only_objectness=1, validation=False, use_cuda=True):
     device = torch.device("cuda" if use_cuda else "cpu")
     anchors = anchors.to(device)
     anchor_step = anchors.size(0)//num_anchors
@@ -132,6 +132,10 @@ def get_region_boxes(output, conf_thresh, num_classes, anchors, num_anchors, onl
     h = output.size(2)
     w = output.size(3)
     cls_anchor_dim = batch*num_anchors*h*w
+    if netshape[0] != 0:
+        nw, nh = netshape
+    else:
+        nw, nh = w, h
 
     t0 = time.time()
     all_boxes = []
@@ -172,10 +176,7 @@ def get_region_boxes(output, conf_thresh, num_classes, anchors, num_anchors, onl
                 for i in range(num_anchors):
                     ind = b*sz_hwa + i*sz_hw + cy*w + cx
                     det_conf =  det_confs[ind]
-                    if only_objectness:
-                        conf = det_confs[ind]
-                    else:
-                        conf = det_confs[ind] * cls_max_confs[ind]
+                    conf = det_conf * (cls_max_confs[ind] if not only_objectness else 1.0)
     
                     if conf > conf_thresh:
                         bcx = xs[ind]
@@ -184,7 +185,7 @@ def get_region_boxes(output, conf_thresh, num_classes, anchors, num_anchors, onl
                         bh = hs[ind]
                         cls_max_conf = cls_max_confs[ind]
                         cls_max_id = cls_max_ids[ind]
-                        box = [bcx/w, bcy/h, bw/w, bh/h, det_conf, cls_max_conf, cls_max_id]
+                        box = [bcx/w, bcy/h, bw/nw, bh/nh, det_conf, cls_max_conf, cls_max_id]
                         if (not only_objectness) and validation:
                             for c in range(num_classes):
                                 tmp_conf = cls_confs[ind][c]
@@ -260,10 +261,8 @@ def plot_boxes(img, boxes, savename=None, class_names=None):
     print("%d box(es) is(are) found" % len(boxes))
     for i in range(len(boxes)):
         box = boxes[i]
-        x1 = (box[0] - box[2]/2.0) * width
-        y1 = (box[1] - box[3]/2.0) * height
-        x2 = (box[0] + box[2]/2.0) * width
-        y2 = (box[1] + box[3]/2.0) * height
+        x1,y1,x2,y2 = (box[0] - box[2]/2.0) * width, (box[1] - box[3]/2.0) * height, \
+                (box[0] + box[2]/2.0) * width, (box[1] + box[3]/2.0) * height
 
         rgb = (255, 0, 0)
         if len(box) >= 7 and class_names:
@@ -276,7 +275,7 @@ def plot_boxes(img, boxes, savename=None, class_names=None):
             green = get_color(1, offset, classes)
             blue  = get_color(0, offset, classes)
             rgb = (red, green, blue)
-            draw.text((x1, y1), class_names[cls_id], fill=rgb)
+            draw.text((x1, y1), "{} : {:.3f}".format(class_names[cls_id],cls_conf), fill=rgb)
         draw.rectangle([x1, y1, x2, y2], outline=rgb)
     if savename:
         print("save plot results to %s" % savename)
@@ -336,7 +335,11 @@ def do_detect(model, img, conf_thresh, nms_thresh, use_cuda=True):
     t2 = time.time()
 
     out_boxes = model(img)
-    boxes = get_all_boxes(out_boxes, conf_thresh, model.num_classes, use_cuda=use_cuda)[0]
+    if model.net_name() == 'region': # region_layer
+        shape=(0,0)
+    else:
+        shape=(model.width, model.height)
+    boxes = get_all_boxes(out_boxes, shape, conf_thresh, model.num_classes, use_cuda=use_cuda)[0]
     
     t3 = time.time()
     boxes = nms(boxes, nms_thresh)

@@ -11,8 +11,7 @@ from utils import read_truths_args, read_truths
 from image import *
 
 class listDataset(Dataset):
-
-    def __init__(self, root, shape=None, shuffle=True, transform=None, target_transform=None, train=False, seen=0, batch_size=64, num_workers=4):
+    def __init__(self, root, shape=None, shuffle=True, crop=False, jitter=0.3, hue=0.1, saturation=1.5, exposure=1.5, transform=None, target_transform=None, train=False, seen=0, batch_size=64, num_workers=4):
        with open(root, 'r') as file:
            self.lines = file.readlines()
 
@@ -28,42 +27,41 @@ class listDataset(Dataset):
        self.batch_size = batch_size
        self.num_workers = num_workers
 
+       self.crop = crop
+       self.jitter = jitter
+       self.hue = hue
+       self.saturation = saturation
+       self.exposure = exposure
+
     def __len__(self):
         return self.nSamples
+
+    def get_different_scale(self):
+        if self.seen < 4000*64:
+            wh = 13*32                          # 416
+        elif self.seen < 8000*64:
+            wh = (random.randint(0,3) + 13)*32  # 416, 480
+        elif self.seen < 12000*64:
+            wh = (random.randint(0,5) + 12)*32  # 384, ..., 544
+        elif self.seen < 16000*64:
+            wh = (random.randint(0,7) + 11)*32  # 352, ..., 576
+        else: # self.seen < 20000*64:
+            wh = (random.randint(0,9) + 10)*32  # 320, ..., 608
+        return (wh, wh)
 
     def __getitem__(self, index):
         assert index <= len(self), 'index range error'
         imgpath = self.lines[index].rstrip()
 
-        if self.train and index % self.batch_size == 0:
-            if self.seen < 4000*64:
-               width = 13*32
-               self.shape = (width, width)
-            elif self.seen < 8000*64:
-               width = (random.randint(0,3) + 13)*32
-               self.shape = (width, width)
-            elif self.seen < 12000*64:
-               width = (random.randint(0,5) + 12)*32
-               self.shape = (width, width)
-            elif self.seen < 16000*64:
-               width = (random.randint(0,7) + 11)*32
-               self.shape = (width, width)
-            else: # self.seen < 20000*64:
-               width = (random.randint(0,9) + 10)*32
-               self.shape = (width, width)
-
         if self.train:
-            jitter = 0.2
-            hue = 0.1
-            saturation = 1.5 
-            exposure = 1.5
-
-            img, label = load_data_detection(imgpath, self.shape, jitter, hue, saturation, exposure)
+            if index % 64 == 0: # in paper, every 10 batches, but we did every 64 images
+                self.shape = self.get_different_scale()
+            img, label = load_data_detection(imgpath, self.shape, self.crop, self.jitter, self.hue, self.saturation, self.exposure)
             label = torch.from_numpy(label)
         else:
             img = Image.open(imgpath).convert('RGB')
             if self.shape:
-                img = img.resize(self.shape)
+                img, org_w, org_h = letterbox_image(img, self.shape[0], self.shape[1]), img.width, img.height
     
             labpath = imgpath.replace('images', 'labels').replace('JPEGImages', 'labels').replace('.jpg', '.txt').replace('.png','.txt')
             label = torch.zeros(50*5)
@@ -89,4 +87,7 @@ class listDataset(Dataset):
             label = self.target_transform(label)
 
         self.seen = self.seen + self.num_workers
-        return (img, label)
+        if self.train:
+            return (img, label)
+        else:
+            return (img, label, org_w, org_h)
