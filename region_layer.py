@@ -168,8 +168,7 @@ class RegionLayer(nn.Module):
         t3 = time.time()
         loss_coord = self.coord_scale * nn.MSELoss(reduction='sum')(coord*obj_mask, tcoord*obj_mask)/nB
         loss_conf = nn.MSELoss(reduction='sum')(conf*conf_mask, tconf*conf_mask)/nB
-        #####
-        loss_cls = self.class_scale * 2 * nn.CrossEntropyLoss(reduction='sum')(cls, tcls)/nB if cls.size(0) > 0 else 0 
+        loss_cls = self.class_scale * nn.CrossEntropyLoss(reduction='sum')(cls, tcls)/nB if cls.size(0) > 0 else 0 
         loss = loss_coord + loss_conf + loss_cls
 
         t4 = time.time()
