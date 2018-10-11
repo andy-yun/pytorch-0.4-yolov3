@@ -65,8 +65,8 @@ class YoloLayer(nn.Module):
                 gw, gh = tbox[t][3] * self.net_width, tbox[t][4] * self.net_height
                 cur_gt_boxes = torch.FloatTensor([gx, gy, gw, gh]).repeat(nAnchors,1).t()
                 cur_ious = torch.max(cur_ious, multi_bbox_ious(cur_pred_boxes, cur_gt_boxes, x1y1x2y2=False))
-            ignore_ix = cur_ious>self.ignore_thresh
-            noobj_mask[b][ignore_ix.view(nA,nH,nW)] = 0
+            ignore_ix = (cur_ious>self.ignore_thresh).view(nA,nH,nW)
+            noobj_mask[b][ignore_ix] = 0
 
             for t in range(50):
                 if tbox[t][1] == 0:
@@ -129,8 +129,8 @@ class YoloLayer(nn.Module):
         t1 = time.time()
         grid_x = torch.linspace(0, nW-1, nW).repeat(nB*nA, nH, 1).view(cls_anchor_dim).to(self.device)
         grid_y = torch.linspace(0, nH-1, nH).repeat(nW,1).t().repeat(nB*nA, 1, 1).view(cls_anchor_dim).to(self.device)
-        anchor_w = anchors.index_select(1, ix[0]).repeat(1, nB*nH*nW).view(cls_anchor_dim)
-        anchor_h = anchors.index_select(1, ix[1]).repeat(1, nB*nH*nW).view(cls_anchor_dim)
+        anchor_w = anchors.index_select(1, ix[0]).repeat(nB, nH*nW).view(cls_anchor_dim)
+        anchor_h = anchors.index_select(1, ix[1]).repeat(nB, nH*nW).view(cls_anchor_dim)
 
         pred_boxes[0] = coord[0] + grid_x
         pred_boxes[1] = coord[1] + grid_y

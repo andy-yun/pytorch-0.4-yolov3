@@ -57,8 +57,8 @@ class RegionLayer(nn.Module):
                 gy, gh = [ i * nH for i in (tbox[t][2], tbox[t][4]) ]
                 cur_gt_boxes = torch.FloatTensor([gx, gy, gw, gh]).repeat(nAnchors,1).t()
                 cur_ious = torch.max(cur_ious, multi_bbox_ious(cur_pred_boxes, cur_gt_boxes, x1y1x2y2=False))
-            ignore_ix = cur_ious>self.thresh
-            noobj_mask[b][ignore_ix.view(nA,nH,nW)] = 0
+            ignore_ix = (cur_ious>self.thresh).view(nA,nH,nW)
+            noobj_mask[b][ignore_ix] = 0
 
             for t in range(50):
                 if tbox[t][1] == 0:
@@ -135,8 +135,8 @@ class RegionLayer(nn.Module):
         t1 = time.time()
         grid_x = torch.linspace(0, nW-1, nW).repeat(nB*nA, nH, 1).view(cls_anchor_dim).to(self.device)
         grid_y = torch.linspace(0, nH-1, nH).repeat(nW,1).t().repeat(nB*nA, 1, 1).view(cls_anchor_dim).to(self.device)
-        anchor_w = self.anchors.index_select(1, ix[0]).repeat(1, nB*nH*nW).view(cls_anchor_dim)
-        anchor_h = self.anchors.index_select(1, ix[1]).repeat(1, nB*nH*nW).view(cls_anchor_dim)
+        anchor_w = self.anchors.index_select(1, ix[0]).repeat(nB, nH*nW).view(cls_anchor_dim)
+        anchor_h = self.anchors.index_select(1, ix[1]).repeat(nB, nH*nW).view(cls_anchor_dim)
 
         pred_boxes[0] = coord[0] + grid_x
         pred_boxes[1] = coord[1] + grid_y
@@ -168,7 +168,8 @@ class RegionLayer(nn.Module):
         t3 = time.time()
         loss_coord = self.coord_scale * nn.MSELoss(reduction='sum')(coord*obj_mask, tcoord*obj_mask)/nB
         loss_conf = nn.MSELoss(reduction='sum')(conf*conf_mask, tconf*conf_mask)/nB
-        loss_cls = self.class_scale * nn.CrossEntropyLoss(reduction='sum')(cls, tcls)/nB if cls.size(0) > 0 else 0 
+        #####
+        loss_cls = self.class_scale * 2 * nn.CrossEntropyLoss(reduction='sum')(cls, tcls)/nB if cls.size(0) > 0 else 0 
         loss = loss_coord + loss_conf + loss_cls
 
         t4 = time.time()
