@@ -144,12 +144,12 @@ def get_region_boxes(output, netshape, conf_thresh, num_classes, anchors, num_an
     grid_x = torch.linspace(0, w-1, w).repeat(batch*num_anchors, h, 1).view(cls_anchor_dim).to(device)
     grid_y = torch.linspace(0, h-1, h).repeat(w,1).t().repeat(batch*num_anchors, 1, 1).view(cls_anchor_dim).to(device)
     ix = torch.LongTensor(range(0,2)).to(device)
-    anchor_w = anchors.view(num_anchors, anchor_step).index_select(1, ix[0]).repeat(1, batch, h*w).view(cls_anchor_dim)
-    anchor_h = anchors.view(num_anchors, anchor_step).index_select(1, ix[1]).repeat(1, batch, h*w).view(cls_anchor_dim)
+    anchor_w = anchors.view(num_anchors, anchor_step).index_select(1, ix[0]).repeat(batch, h*w).view(cls_anchor_dim)
+    anchor_h = anchors.view(num_anchors, anchor_step).index_select(1, ix[1]).repeat(batch, h*w).view(cls_anchor_dim)
 
-    xs, ys = torch.sigmoid(output[0]) + grid_x, torch.sigmoid(output[1]) + grid_y
-    ws, hs = torch.exp(output[2]) * anchor_w.detach(), torch.exp(output[3]) * anchor_h.detach()
-    det_confs = torch.sigmoid(output[4])
+    xs, ys = output[0].sigmoid() + grid_x, output[1].sigmoid() + grid_y
+    ws, hs = output[2].exp() * anchor_w.detach(), output[3].exp() * anchor_h.detach()
+    det_confs = output[4].sigmoid()
 
     # by ysyun, dim=1 means input is 2D or even dimension else dim=0
     cls_confs = torch.nn.Softmax(dim=1)(output[5:5+num_classes].transpose(0,1)).detach()
@@ -245,6 +245,19 @@ def plot_boxes_cv2(img, boxes, savename=None, class_names=None, color=None):
         cv2.imwrite(savename, img)
     return img
 
+def drawrect(drawcontext, xy, outline=None, width=0):
+    x1, y1, x2, y2 = xy
+    points = (x1, y1), (x2, y1), (x2, y2), (x1, y2), (x1, y1)
+    drawcontext.line(points, fill=outline, width=width)
+
+def drawtext(img, pos, text, bgcolor=(255,255,255), font=None):
+    if font is None:
+        font = ImageFont.load_default().font
+    (tw, th) = font.getsize(text)
+    box_img = Image.new('RGBA', (tw+2, th+2), bgcolor)
+    ImageDraw.Draw(box_img).text((0, 0), text, fill=(0,0,0,255), font=font)
+    img.paste(box_img, (pos[0], pos[1]-th-2))
+
 def plot_boxes(img, boxes, savename=None, class_names=None):
     colors = torch.FloatTensor([[1,0,1],[0,0,1],[0,1,1],[0,1,0],[1,1,0],[1,0,0]])
     def get_color(c, x, max_val):
@@ -258,6 +271,10 @@ def plot_boxes(img, boxes, savename=None, class_names=None):
     width = img.width
     height = img.height
     draw = ImageDraw.Draw(img)
+    try:
+        font = ImageFont.truetype("arialbd", 14)
+    except:
+        font=None
     print("%d box(es) is(are) found" % len(boxes))
     for i in range(len(boxes)):
         box = boxes[i]
@@ -275,8 +292,9 @@ def plot_boxes(img, boxes, savename=None, class_names=None):
             green = get_color(1, offset, classes)
             blue  = get_color(0, offset, classes)
             rgb = (red, green, blue)
-            draw.text((x1, y1), "{} : {:.3f}".format(class_names[cls_id],cls_conf), fill=rgb)
-        draw.rectangle([x1, y1, x2, y2], outline=rgb)
+            text = "{} : {:.3f}".format(class_names[cls_id],cls_conf)
+            drawtext(img, (x1, y1), text, bgcolor=rgb, font=font)
+        drawrect(draw, [x1, y1, x2, y2], outline=rgb, width=2)
     if savename:
         print("save plot results to %s" % savename)
         img.save(savename)
