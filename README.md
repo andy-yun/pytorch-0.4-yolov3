@@ -86,9 +86,11 @@ save plot results to predictions.jpg
 
 ### validation and get evaluation results
 
-##### valid.py data/yourown.data cfg/yourown.cfg yourown_weights
+```
+valid.py data/yourown.data cfg/yourown.cfg yourown_weights
+```
 
-* Performances for voc datasets using yolov2 
+### Performances for voc datasets using yolov2 
 
 - Performances are varied along to the weighting factor, for example.
 ```
