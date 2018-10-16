@@ -88,14 +88,16 @@ save plot results to predictions.jpg
 
 ##### valid.py data/yourown.data cfg/yourown.cfg yourown_weights
 
-##### Performances for voc datasets using yolov2 
-Performances are varied along to the weighting factor, for example.
+* Performances for voc datasets using yolov2 
 
+- Performances are varied along to the weighting factor, for example.
+```
 coord_scale=1, object_scale=5, class_scale=1 mAP = 73.1  
 coord_scale=1, object_scale=5, class_scale=2 mAP = 72.7  
 coord_scale=1, object_scale=3, class_scale=1 mAP = 73.4  
 coord_scale=1, object_scale=3, class_scale=2 mAP = 72.8  
 coord_scale=1, object_scale=1, class_scale=1 mAP = 50.4  
+```
 
 Therefore, you may do many experiments to get the best performances.
 
