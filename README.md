@@ -87,34 +87,18 @@ save plot results to predictions.jpg
 ### validation and get evaluation results
 
 ##### valid.py data/yourown.data cfg/yourown.cfg yourown_weights
-##### scripts/sketch_eval.py prefix test_files class_names
 
-[![validation](https://img.youtube.com/vi/MMssElpERgU/0.jpg)](https://www.youtube.com/watch?v=MMssElpERgU)  
+##### Performances for voc datasets using yolov2 
+Performances are varied along to the weighting factor, for example.
 
-Heres are results:  
-```
-AP for button = 0.9593
-AP for checkbutton = 0.9202
-AP for edittext = 0.8424
-AP for imageview = 0.8356
-AP for radiobutton = 0.8827
-AP for spinner = 0.9539
-AP for textview = 0.7971
-Mean AP = 0.8845
-~~~~~~~~~~~~~
-   Results:
--------------
-button          0.959
-checkbutton     0.920
-edittext        0.842
-imageview       0.836
-radiobutton     0.883
-spinner         0.954
-textview        0.797
-=============
- Average        0.884
-~~~~~~~~~~~~~
-```
+coord_scale=1, object_scale=5, class_scale=1 mAP = 73.1  
+coord_scale=1, object_scale=5, class_scale=2 mAP = 72.7  
+coord_scale=1, object_scale=3, class_scale=1 mAP = 73.4  
+coord_scale=1, object_scale=3, class_scale=2 mAP = 72.8  
+coord_scale=1, object_scale=1, class_scale=1 mAP = 50.4  
+
+Therefore, you may do many experiments to get the best performances.
+
 ### License
 
 MIT License (see LICENSE file).
