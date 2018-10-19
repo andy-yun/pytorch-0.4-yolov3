@@ -91,7 +91,7 @@ valid.py data/yourown.data cfg/yourown.cfg yourown_weights
 ```
 
 ### Performances for voc datasets using yolov2 
-
+- CrossEntropyLoss is used to compare classes
 - Performances are varied along to the weighting factor, for example.
 ```
 coord_scale=1, object_scale=5, class_scale=1 mAP = 73.1  
@@ -99,6 +99,13 @@ coord_scale=1, object_scale=5, class_scale=2 mAP = 72.7
 coord_scale=1, object_scale=3, class_scale=1 mAP = 73.4  
 coord_scale=1, object_scale=3, class_scale=2 mAP = 72.8  
 coord_scale=1, object_scale=1, class_scale=1 mAP = 50.4  
+```
+
+- After modifying anchors information at yolo-voc.cfg and applying new coord_mask
+Finally, I got the 
+```
+anchors = 1.1468, 1.5021, 2.7780, 3.4751, 4.3845, 7.0162, 8.2523, 4.2100, 9.7340, 8.682
+coord_scale=1, object_scale=3, class_scale=1 mAP = 74.4  
 ```
 
 Therefore, you may do many experiments to get the best performances.
