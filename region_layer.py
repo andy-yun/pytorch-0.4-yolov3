@@ -30,6 +30,7 @@ class RegionLayer(nn.Module):
         nA = self.num_anchors
         noobj_mask = torch.ones (nB, nA, nH, nW)
         obj_mask   = torch.zeros(nB, nA, nH, nW)
+        coord_mask = torch.zeros(nB, nA, nH, nW)
         tcoord     = torch.zeros( 4, nB, nA, nH, nW)
         tconf      = torch.zeros(nB, nA, nH, nW)
         tcls       = torch.zeros(nB, nA, nH, nW)
@@ -44,6 +45,7 @@ class RegionLayer(nn.Module):
         if self.seen < 12800:
             tcoord[0].fill_(0.5)
             tcoord[1].fill_(0.5)
+            coord_mask.fill_(0.01)
             # initial w, h == 0 means log(1)==0, s.t, anchor is equal to ground truth.
 
         for b in range(nB):
@@ -89,6 +91,7 @@ class RegionLayer(nn.Module):
 
                 obj_mask  [b][best_n][gj][gi] = 1
                 noobj_mask[b][best_n][gj][gi] = 0
+                coord_mask[b][best_n][gj][gi] = 2. - tbox[t][3]*tbox[t][4]
                 tcoord [0][b][best_n][gj][gi] = gx - gi
                 tcoord [1][b][best_n][gj][gi] = gy - gj
                 tcoord [2][b][best_n][gj][gi] = math.log(gw/anchors[best_n][0])
@@ -98,7 +101,7 @@ class RegionLayer(nn.Module):
                 if iou > 0.5:
                     nRecall += 1
 
-        return nGT, nRecall, obj_mask, noobj_mask, tcoord, tconf, tcls
+        return nGT, nRecall, obj_mask, noobj_mask, coord_mask, tcoord, tconf, tcls
 
     def get_mask_boxes(self, output):
         if not isinstance(self.anchors, torch.Tensor):
@@ -146,7 +149,7 @@ class RegionLayer(nn.Module):
         pred_boxes = convert2cpu(pred_boxes.transpose(0,1).contiguous().view(-1,4)).detach()
 
         t2 = time.time()
-        nGT, nRecall, obj_mask, noobj_mask, tcoord, tconf, tcls = \
+        nGT, nRecall, obj_mask, noobj_mask, coord_mask, tcoord, tconf, tcls = \
             self.build_targets(pred_boxes, target.detach(), nH, nW)
 
         cls_mask = (obj_mask == 1)
@@ -160,15 +163,13 @@ class RegionLayer(nn.Module):
         tconf = tconf.view(cls_anchor_dim).to(self.device)        
 
         conf_mask = (self.object_scale * obj_mask + self.noobject_scale * noobj_mask).view(cls_anchor_dim).to(self.device)
-        if self.seen < 12800:
-            obj_mask = torch.ones(cls_anchor_dim).to(self.device)
-        else:
-            obj_mask = obj_mask.view(cls_anchor_dim).to(self.device)
+        obj_mask = obj_mask.view(cls_anchor_dim).to(self.device)
+        coord_mask = coord_mask.view(cls_anchor_dim).to(self.device)
 
         t3 = time.time()
-        loss_coord = self.coord_scale * nn.MSELoss(reduction='sum')(coord*obj_mask, tcoord*obj_mask)/nB
+        loss_coord = self.coord_scale * nn.MSELoss(reduction='sum')(coord*coord_mask, tcoord*coord_mask)/nB
         loss_conf = nn.MSELoss(reduction='sum')(conf*conf_mask, tconf*conf_mask)/nB
-        loss_cls = self.class_scale * nn.CrossEntropyLoss(reduction='sum')(cls, tcls)/nB if cls.size(0) > 0 else 0 
+        loss_cls = self.class_scale * nn.CrossEntropyLoss(reduction='sum')(cls, tcls)/nB
         loss = loss_coord + loss_conf + loss_cls
 
         t4 = time.time()
