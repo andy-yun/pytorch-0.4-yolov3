@@ -43,7 +43,7 @@ class YoloLayer(nn.Module):
         coord_mask = torch.zeros(nB, nA, nH, nW)
         tcoord     = torch.zeros( 4, nB, nA, nH, nW)
         tconf      = torch.zeros(nB, nA, nH, nW)
-        tcls       = torch.zeros(nB, nA, nH, nW)
+        tcls       = torch.zeros(nB, nA, nH, nW, self.num_classes)
 
         nAnchors = nA*nH*nW
         nPixels  = nH*nW
@@ -93,7 +93,7 @@ class YoloLayer(nn.Module):
                 tcoord [1][b][best_n][gj][gi] = gy - gj
                 tcoord [2][b][best_n][gj][gi] = math.log(gw/anchors[best_n][0])
                 tcoord [3][b][best_n][gj][gi] = math.log(gh/anchors[best_n][1])
-                tcls      [b][best_n][gj][gi] = tbox[t][0]
+                tcls      [b][best_n][gj][gi][int(tbox[t][0])] = 1
                 tconf     [b][best_n][gj][gi] = iou if self.rescore else 1.
 
                 if iou > 0.5:
@@ -126,7 +126,7 @@ class YoloLayer(nn.Module):
         conf = output.index_select(2, ix[4]).view(cls_anchor_dim).sigmoid()
 
         cls  = output.index_select(2, cls_grid)
-        cls  = cls.view(nB*nA, nC, nH*nW).transpose(1,2).contiguous().view(cls_anchor_dim, nC)
+        cls  = cls.view(nB*nA, nC, nH*nW).transpose(1,2).contiguous().view(cls_anchor_dim, nC).to(self.device)
 
         t1 = time.time()
         grid_x = torch.linspace(0, nW-1, nW).repeat(nB*nA, nH, 1).view(cls_anchor_dim).to(self.device)
@@ -145,10 +145,7 @@ class YoloLayer(nn.Module):
         nGT, nRecall, nRecall75, obj_mask, noobj_mask, coord_mask, tcoord, tconf, tcls = \
             self.build_targets(pred_boxes, target.detach(), anchors.detach(), nA, nH, nW)
 
-        cls_mask = (obj_mask == 1)
-        tcls = tcls[cls_mask].long().view(-1).to(self.device)
-        cls_mask = cls_mask.view(-1, 1).repeat(1,nC).to(self.device)
-        cls = cls[cls_mask].view(-1, nC)
+        tcls = tcls.view(cls_anchor_dim, nC).to(self.device)
 
         nProposals = int((conf > 0.25).sum())
         
@@ -161,8 +158,8 @@ class YoloLayer(nn.Module):
 
         t3 = time.time()
         loss_coord = nn.MSELoss(reduction='sum')(coord*coord_mask, tcoord*coord_mask)/nB
-        loss_conf = nn.MSELoss(reduction='sum')(conf*conf_mask, tconf*conf_mask)/nB
-        loss_cls = nn.CrossEntropyLoss(reduction='sum')(cls, tcls)/nB
+        loss_conf  = nn.BCELoss(reduction='sum')(conf*conf_mask, tconf*conf_mask)/nB
+        loss_cls   = nn.BCEWithLogitsLoss(reduction='sum')(cls, tcls)/(nB * nC)
         loss = loss_coord + loss_conf + loss_cls
 
         t4 = time.time()
