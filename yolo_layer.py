@@ -159,7 +159,7 @@ class YoloLayer(nn.Module):
         t3 = time.time()
         loss_coord = nn.MSELoss(reduction='sum')(coord*coord_mask, tcoord*coord_mask)/nB
         loss_conf  = nn.BCELoss(reduction='sum')(conf*conf_mask, tconf*conf_mask)/nB
-        loss_cls   = 2. * nn.BCEWithLogitsLoss(reduction='sum')(cls, tcls)/(nB * nC)
+        loss_cls   = nn.BCEWithLogitsLoss(reduction='sum')(cls, tcls)/(nB * np.sqrt(nC))
         loss = loss_coord + loss_conf + loss_cls
 
         t4 = time.time()
