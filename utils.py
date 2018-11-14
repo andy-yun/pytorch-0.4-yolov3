@@ -254,8 +254,10 @@ def drawtext(img, pos, text, bgcolor=(255,255,255), font=None):
     if font is None:
         font = ImageFont.load_default().font
     (tw, th) = font.getsize(text)
-    box_img = Image.new('RGBA', (tw+2, th+2), bgcolor)
+    box_img = Image.new('RGB', (tw+2, th+2), bgcolor)
     ImageDraw.Draw(box_img).text((0, 0), text, fill=(0,0,0,255), font=font)
+    if img.mode != 'RGB':
+        img = img.convert('RGB')
     img.paste(box_img, (pos[0], pos[1]-th-2))
 
 def plot_boxes(img, boxes, savename=None, class_names=None):
