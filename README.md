@@ -108,6 +108,8 @@ anchors = 1.1468, 1.5021, 2.7780, 3.4751, 4.3845, 7.0162, 8.2523, 4.2100, 9.7340
 coord_scale=1, object_scale=3, class_scale=1 mAP = 74.4  
 ```
 
+- using yolov3 with self.rescore = 1 and latest code, ___mAP = 74.9___.
+
 Therefore, you may do many experiments to get the best performances.
 
 ### License
