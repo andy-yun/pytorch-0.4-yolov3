@@ -18,7 +18,7 @@ class YoloLayer(nn.Module):
         self.anchors = anchors
         self.num_anchors = num_anchors
         self.anchor_step = len(anchors)//num_anchors
-        self.rescore = 0
+        self.rescore = 1
         self.ignore_thresh = 0.5
         self.truth_thresh = 1.
         self.nth_layer = 0
@@ -145,21 +145,25 @@ class YoloLayer(nn.Module):
         nGT, nRecall, nRecall75, obj_mask, noobj_mask, coord_mask, tcoord, tconf, tcls = \
             self.build_targets(pred_boxes, target.detach(), anchors.detach(), nA, nH, nW)
 
-        tcls = tcls.view(cls_anchor_dim, nC).to(self.device)
+        conf_mask = (obj_mask + noobj_mask).view(cls_anchor_dim).to(self.device)
+        obj_mask  = (obj_mask==1).view(cls_anchor_dim)
 
         nProposals = int((conf > 0.25).sum())
-        
-        tcoord = tcoord.view(4, cls_anchor_dim).to(self.device)
+
+        coord = coord[:,obj_mask]
+        tcoord = tcoord.view(4, cls_anchor_dim)[:,obj_mask].to(self.device)        
+
         tconf = tconf.view(cls_anchor_dim).to(self.device)        
 
-        conf_mask = (obj_mask + noobj_mask).view(cls_anchor_dim).to(self.device)
-        obj_mask = obj_mask.view(cls_anchor_dim).to(self.device)
-        coord_mask = coord_mask.view(cls_anchor_dim).to(self.device)
+        cls = cls[obj_mask,:].to(self.device)
+        tcls = tcls.view(cls_anchor_dim, nC)[obj_mask,:].to(self.device)
 
         t3 = time.time()
-        loss_coord = nn.MSELoss(reduction='sum')(coord*coord_mask, tcoord*coord_mask)/nB
+        loss_coord = nn.BCELoss(reduction='sum')(coord[0:2], tcoord[0:2])/nB + \
+                     nn.MSELoss(reduction='sum')(coord[2:4], tcoord[2:4])/nB
         loss_conf  = nn.BCELoss(reduction='sum')(conf*conf_mask, tconf*conf_mask)/nB
         loss_cls   = nn.BCEWithLogitsLoss(reduction='sum')(cls, tcls)/nB
+
         loss = loss_coord + loss_conf + loss_cls
 
         t4 = time.time()
@@ -173,6 +177,6 @@ class YoloLayer(nn.Module):
         print('%d: Layer(%03d) nGT %3d, nRC %3d, nRC75 %3d, nPP %3d, loss: box %6.3f, conf %6.3f, class %6.3f, total %7.3f' 
                 % (self.seen, self.nth_layer, nGT, nRecall, nRecall75, nProposals, loss_coord, loss_conf, loss_cls, loss))
         if math.isnan(loss.item()):
-            print(conf, tconf)
+            print(coord, conf, tconf)
             sys.exit(0)
         return loss
