@@ -132,7 +132,8 @@ def my_eval(detpath, imagesetfile, classname, cachedir,
     # sort by confidence
     sorted_ind = np.argsort(-confidence)
     sorted_scores = np.sort(-confidence)
-    BB = BB[sorted_ind, :]
+    if len(sorted_ind) > 0:
+        BB = BB[sorted_ind, :]
     image_ids = [image_ids[x] for x in sorted_ind]
 
     # go down dets and mark TPs and FPs
