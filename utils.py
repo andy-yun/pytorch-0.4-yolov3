@@ -78,12 +78,21 @@ def multi_bbox_ious(boxes1, boxes2, x1y1x2y2=True):
 def nms(boxes, nms_thresh):
     if len(boxes) == 0:
         return boxes
+    res =[]
+    for item in boxes:
+        temp = []
+        for ite in item:
+            if torch.is_tensor(ite):
+                ite = float(ite.numpy())
+            temp.append(ite)
+        res.append(temp)
+    boxes = res
 
-    det_confs = torch.zeros(len(boxes))
+    det_confs = np.zeros(len(boxes))
     for i in range(len(boxes)):
-        det_confs[i] = 1-boxes[i][4]                
+        det_confs[i] = 1-boxes[i][4]
 
-    _,sortIds = torch.sort(det_confs)
+    sortIds = np.argsort(det_confs)
     out_boxes = []
     for i in range(len(boxes)):
         box_i = boxes[sortIds[i]]
