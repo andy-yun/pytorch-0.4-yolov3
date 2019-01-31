@@ -144,22 +144,25 @@ def main():
         try:
             print("Training for ({:d},{:d})".format(init_epoch+1, max_epochs))
             fscore = 0
+            correct = 0
             if init_eval and not no_eval and init_epoch > test_interval:
                 print('>> initial evaluating ...')
-                mfscore = test(init_epoch)
+                mcorrect,mfscore = test(init_epoch)
                 print('>> done evaluation.')
             else:
                 mfscore = 0.5
+                mcorrect = 0
             for epoch in range(init_epoch+1, max_epochs+1):
                 nsamples = train(epoch)
                 if epoch % save_interval == 0:
                     savemodel(epoch, nsamples)
                 if not no_eval and epoch >= test_interval and (epoch%test_interval) == 0:
-                    print('>> intermittent evaluating ...')
-                    fscore = test(epoch)
+                    print('>> interim evaluating ...')
+                    correct, fscore = test(epoch)
                     print('>> done evaluation.')
-                if FLAGS.localmax and fscore > mfscore:
+                if FLAGS.localmax and correct > mcorrect:
                     mfscore = fscore
+                    mcorrect = correct
                     savemodel(epoch, nsamples, True)
                 print('-'*90)
         except KeyboardInterrupt:
@@ -349,7 +352,7 @@ def test(epoch):
     recall = 1.0*correct/(total+eps)
     fscore = 2.0*precision*recall/(precision+recall+eps)
     savelog("[%03d] correct: %d, precision: %f, recall: %f, fscore: %f" % (epoch, correct, precision, recall, fscore))
-    return fscore
+    return correct,fscore
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
