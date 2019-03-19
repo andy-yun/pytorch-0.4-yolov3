@@ -37,15 +37,15 @@ class listDataset(Dataset):
         return self.nSamples
 
     def get_different_scale(self):
-        if self.seen < 4000*64:
+        if self.seen < 4000*self.batch_size:
             wh = 13*32                          # 416
-        elif self.seen < 8000*64:
+        elif self.seen < 8000*self.batch_size:
             wh = (random.randint(0,3) + 13)*32  # 416, 480
-        elif self.seen < 12000*64:
+        elif self.seen < 12000*self.batch_size:
             wh = (random.randint(0,5) + 12)*32  # 384, ..., 544
-        elif self.seen < 16000*64:
+        elif self.seen < 16000*self.batch_size:
             wh = (random.randint(0,7) + 11)*32  # 352, ..., 576
-        else: # self.seen < 20000*64:
+        else: # self.seen < 20000*self.batch_size:
             wh = (random.randint(0,9) + 10)*32  # 320, ..., 608
         return (wh, wh)
 
