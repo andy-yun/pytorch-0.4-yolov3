@@ -54,7 +54,7 @@ class listDataset(Dataset):
         imgpath = self.lines[index].rstrip()
 
         if self.train:
-            if index % 64 == 0: # in paper, every 10 batches, but we did every 64 images
+            if self.seen % (self.batch_size * 10) == 0: # in paper, every 10 batches, but we did every 64 images
                 self.shape = self.get_different_scale()
             img, label = load_data_detection(imgpath, self.shape, self.crop, self.jitter, self.hue, self.saturation, self.exposure)
             label = torch.from_numpy(label)

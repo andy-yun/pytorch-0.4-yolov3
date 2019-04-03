@@ -422,9 +422,9 @@ class Darknet(nn.Module):
             elif block['type'] == 'connected':
                 model = self.models[ind]
                 if block['activation'] != 'linear':
-                    save_fc(fc, model)
+                    save_fc(fp, model)
                 else:
-                    save_fc(fc, model[0])
+                    save_fc(fp, model[0])
             elif block['type'] == 'maxpool':
                 pass
             elif block['type'] == 'reorg':
