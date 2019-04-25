@@ -78,6 +78,7 @@ def multi_bbox_ious(boxes1, boxes2, x1y1x2y2=True):
 def nms(boxes, nms_thresh):
     if len(boxes) == 0:
         return boxes
+
     res =[]
     for item in boxes:
         temp = []
@@ -300,7 +301,7 @@ def plot_boxes(img, boxes, savename=None, class_names=None):
         rgb = (255, 0, 0)
         if len(box) >= 7 and class_names:
             cls_conf = box[5]
-            cls_id = box[6]
+            cls_id = int(box[6])
             print('%s: %f' % (class_names[cls_id], cls_conf))
             classes = len(class_names)
             offset = cls_id * 123457 % classes
