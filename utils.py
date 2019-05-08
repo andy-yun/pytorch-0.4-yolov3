@@ -268,7 +268,7 @@ def drawtext(img, pos, text, bgcolor=(255,255,255), font=None):
     ImageDraw.Draw(box_img).text((0, 0), text, fill=(0,0,0,255), font=font)
     if img.mode != 'RGB':
         img = img.convert('RGB')
-    sx, sy = pos[0],pos[1]-th-2
+    sx, sy = int(pos[0]),int(pos[1]-th-2)
     if sx<0:
         sx=0
     if sy<0:
