@@ -10,6 +10,11 @@ from PIL import Image
 from utils import read_truths_args, read_truths
 from image import *
 
+def custom_collate(batch):
+    data = torch.stack([item[0] for item in batch], 0)
+    targets = torch.stack([item[1] for item in batch], 0)
+    return data, targets
+
 class listDataset(Dataset):
     def __init__(self, root, shape=None, shuffle=True, crop=False, jitter=0.3, hue=0.1, saturation=1.5, exposure=1.5, transform=None, target_transform=None, train=False, seen=0, batch_size=64, num_workers=4):
        with open(root, 'r') as file:

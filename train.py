@@ -199,16 +199,18 @@ def train(epoch):
     init_height = cur_model.height
     kwargs = {'num_workers': num_workers, 'pin_memory': True} if use_cuda else {}
     train_loader = torch.utils.data.DataLoader(
-        dataset.listDataset(trainlist, shape=(init_width, init_height),
-                        shuffle=True,
-                        transform=transforms.Compose([
-                            transforms.ToTensor(),
-                        ]), 
-                        train=True,
-                        seen=cur_model.seen,
-                        batch_size=batch_size,
-                        num_workers=num_workers),
-                        batch_size=batch_size, shuffle=False, **kwargs)
+                dataset.listDataset(trainlist, 
+                                    shape=(init_width, init_height),
+                                    shuffle=True,
+                                    transform=transforms.Compose([
+                                        transforms.ToTensor(),
+                                        ]), 
+                                    train=True,
+                                    seen=cur_model.seen,
+                                    batch_size=batch_size,
+                                    num_workers=num_workers),
+                collate_fn=dataset.custom_collate, 
+                batch_size=batch_size, shuffle=False, **kwargs)
 
     processed_batches = cur_model.seen//batch_size
     lr = adjust_learning_rate(optimizer, processed_batches)
