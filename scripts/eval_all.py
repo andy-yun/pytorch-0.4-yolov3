@@ -3,7 +3,6 @@ import os.path
 from PIL import Image
 import sys
 from torch.autograd import Variable
-sys.path.append('.')
 from darknet import Darknet
 from utils import get_all_boxes, do_detect, plot_boxes, load_class_names, image2torch, get_region_boxes, nms
 import numpy as np

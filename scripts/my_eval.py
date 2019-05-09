@@ -8,9 +8,8 @@ import os,sys
 #import cPickle
 import _pickle as cPickle
 import numpy as np
-sys.path.append("stats")
-from eval_ap import parse_rec
-from eval_all import get_image_xml_name
+from scripts.eval_ap import parse_rec
+from scripts.eval_all import get_image_xml_name
 from utils import load_class_names
 
 

@@ -2,7 +2,6 @@ import os
 import os.path
 from PIL import Image
 import sys
-sys.path.append('.')
 from darknet import Darknet
 from utils import do_detect, plot_boxes, load_class_names
 
